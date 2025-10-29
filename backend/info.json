@@ -1,0 +1,152 @@
+{
+  "name": "Adam El Amrani",
+  "contact": {
+    "email": "adam.elamrani04@gmail.com",
+    "phone": "+212643826924",
+    "location": "Rabat, Morocco"
+  },
+  "education": {
+    "institution": "International University of Rabat",
+    "program": "Integrated Preparatory Classes and Engineering Program (Computer Science)",
+    "years": "2021 – 2026 (Expected)",
+    "details": "Comprehensive 5-year curriculum combining foundational preparatory coursework with advanced computer engineering studies. Focus on AI systems, data engineering, and software design.",
+    "expected_graduation": "May 2026"
+  },
+  "experience": [
+    {
+      "title": "AI & Healthcare Software Engineering Intern",
+      "company": "Division of Informatics and Methods (DIM), Ministry of Health and Social Protection",
+      "location": "Rabat, Morocco",
+      "date": "September – October 2025",
+      "tasks": [
+        "Designed and implemented an intelligent medical assistant for automating report and prescription generation using RAG architecture.",
+        "Integrated Whisper model for audio transcription of doctor dictations with high accuracy in French medical terminology.",
+        "Built a ChromaDB vector database with 10,000+ Moroccan pharmaceutical products for semantic search and accurate prescription data.",
+        "Developed a Streamlit interface for medical staff to upload dictations, generate reports/prescriptions, and download PDFs.",
+        "Implemented CSV logging for document traceability, capturing metadata such as date, hospital, doctor, and PDF type.",
+        "Created professional PDF templates using ReportLab, following French medical documentation standards."
+      ],
+      "technologies": ["Python", "Streamlit", "ChromaDB", "Groq API", "LLaMA 3.3 70B", "Whisper", "ReportLab", "CSV"],
+      "report": "documents/latex/rapport_pfa_dim_v0.pdf"
+    },
+    {
+      "title": "Data Engineer Intern",
+      "company": "Imperium Media",
+      "location": "Casablanca, Morocco (Remote)",
+      "date": "August 2024",
+      "tasks": [
+        "Transformed raw data into structured formats using large language models (LLMs) for downstream system integration.",
+        "Developed REST APIs for seamless data flow between backend services and client applications.",
+        "Utilized vector databases to support Retrieval-Augmented Generation (RAG) systems for intelligent data retrieval.",
+        "Improved data pipeline efficiency and designed scalable data schemas."
+      ],
+      "technologies": ["Python", "FastAPI", "SQL", "LangChain", "Vector Databases"],
+      "report": "documents/internship/Rapport_stage2024.pdf"
+    },
+    {
+      "title": "AWS Development Intern",
+      "company": "MTDS",
+      "location": "Rabat, Morocco",
+      "date": "June – July 2024",
+      "tasks": [
+        "Completed AWS training and hands-on labs on EC2, S3, and Lambda services.",
+        "Deployed cloud-based applications to improve performance and scalability.",
+        "Contributed to data storage design and implementation on AWS infrastructure.",
+        "Assisted in optimizing cost and reliability through automated deployment workflows."
+      ],
+      "technologies": ["AWS EC2", "S3", "Lambda", "CloudFormation", "Python"]
+    },
+    {
+      "title": "Software Intern",
+      "company": "ONCF",
+      "location": "Rabat, Morocco",
+      "date": "June 2021",
+      "tasks": [
+        "Developed a C# application to extract and convert SQL Server data into structured PDF invoices.",
+        "Created advanced reports using Crystal Reports with custom templates.",
+        "Implemented a Windows service for background automation on startup.",
+        "Maintained a local SQL database to manage and process financial transactions."
+      ],
+      "technologies": ["C#", "SQL Server", "Crystal Reports", "Windows Services"],
+      "report": "documents/internship/Stage-Ouvrier.pdf"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Agent47: Multi-Agent AI Assistant",
+      "description": "A multi-agent AI system designed to overcome monolithic model limitations using specialized agents that collaborate intelligently.",
+      "details": [
+        "Implemented five specialized agents: Main, Todoist, Email, Web/Weather, and Memory.",
+        "Integrated persistent memory using ChromaDB for context-aware interactions.",
+        "Built using Python, Streamlit, Agno Framework, OpenRouter, and DeepSeek V3."
+      ],
+      "technologies": ["Python", "Streamlit", "ChromaDB", "Agno", "OpenRouter", "DeepSeek V3"]
+    },
+    {
+      "name": "Real-Time Facial Recognition Security System",
+      "description": "Real-time facial recognition for secure access authentication using OpenCV and DeepFace.",
+      "details": [
+        "Implemented facial capture via webcam.",
+        "Integrated DeepFace for high-accuracy facial recognition.",
+        "Used computer vision and deep learning for verification."
+      ],
+      "technologies": ["Python", "OpenCV", "DeepFace"]
+    },
+    {
+      "name": "University Restaurant Management Application",
+      "description": "Desktop management system for multi-role restaurant operations.",
+      "details": [
+        "Developed administration, chef, and customer modules.",
+        "Implemented ordering, cart, and inventory features.",
+        "Used UML diagrams for modeling and system design."
+      ],
+      "technologies": ["Java", "Swing", "MySQL", "UML"]
+    },
+    {
+      "name": "Library Management Project",
+      "description": "Streamlit-based system to manage books, customers, and transactions.",
+      "details": [
+        "Designed user-friendly interface for CRUD operations.",
+        "Handled data persistence and analytics.",
+        "Enabled real-time updates and filtering."
+      ],
+      "technologies": ["Python", "Streamlit", "SQLite"]
+    }
+    ,
+    {
+      "name": "Personal Portfolio Website",
+      "description": "A dark, futuristic portfolio site for Adam El Amrani featuring a glassmorphism/neon UI and an AI-powered chat assistant.",
+      "details": [
+        "Frontend built with React and Tailwind CSS; responsive layout with glassmorphism and neon accents.",
+        "AI chat powered by a FastAPI backend and a LLaMA-based model; responses use the portfolio data as context.",
+        "Projects and skills are loaded from this `info.json`; clicking items automatically asks the assistant about them.",
+        "Includes markdown-capable rendering for assistant messages and Tailwind Typography for readable prose styling."
+      ],
+      "technologies": ["React", "Tailwind CSS", "FastAPI", "Python", "react-markdown", "remark-gfm", "LLaMA"]
+    }
+    ,
+    {
+      "name": "Report Medical Assistant",
+      "description": "An internship project developing an AI assistant to automate medical report and prescription generation using RAG, transcription, and PDF generation.",
+      "details": [
+        "Implemented an end-to-end pipeline: audio transcription (Whisper), RAG retrieval (ChromaDB), LLM processing (LLaMA 3.3 via Groq API), and PDF generation (ReportLab).",
+        "Built a Streamlit interface for uploading dictations, reviewing transcriptions, generating reports/prescriptions, and downloading PDFs.",
+        "Implemented CSV logging for traceability, capturing date, hospital, doctor, and document type.",
+        "Developed a ChromaDB pharmaceutical database for accurate medicine lookup and prescription generation; supported EAN-13 codes and dosage forms.",
+        "Focused on French-language medical templates, deterministic LLM settings (low temperature), and professional PDF formatting for A4 output."
+      ],
+      "technologies": ["Python", "Streamlit", "ChromaDB", "Groq API", "LLaMA 3.3 70B", "Whisper", "ReportLab", "CSV"],
+      "year": 2025,
+      "link": ""
+    }
+  ],
+  "skills": {
+    "programming_languages": ["Python", "Java", "C#", "SQL"],
+    "ai_ml": ["LangChain", "LLMs", "RAG", "DeepFace", "Agno Framework"],
+    "cloud_computing": ["AWS EC2", "S3", "Lambda", "Docker"],
+    "databases": ["SQL", "NoSQL", "Vector Databases", "ChromaDB"],
+    "tools": ["UML", "APIs", "Streamlit", "Git", "Crystal Reports"],
+    "soft_skills": ["Problem-solving", "Adaptability", "Collaboration", "Technical Communication"]
+  },
+  "profile_summary": "Computer engineering student specializing in artificial intelligence, data engineering, and intelligent automation. Passionate about building scalable systems that merge machine learning, cloud computing, and software engineering. Experienced with LLM-powered automation, vector databases, and cloud infrastructure."
+}

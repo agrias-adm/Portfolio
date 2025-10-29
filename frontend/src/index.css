@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations and utility classes used by the app */
+@layer utilities {
+	.animate-fade-in {
+		animation: fade-in 0.8s ease-out both;
+	}
+
+	.animate-gradient {
+		background-size: 200% 200%;
+		animation: gradient 4s ease infinite;
+	}
+}
+
+@keyframes fade-in {
+	from { opacity: 0; transform: translateY(20px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gradient {
+	0%,100% { background-position: 0% 50%; }
+	50% { background-position: 100% 50%; }
+}
+
+@keyframes pulse-fast {
+	0%,100% { opacity: 0.6; transform: scale(1); }
+	50% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes bounce-dot {
+	0%,100% { transform: translateY(0); }
+	50% { transform: translateY(-6px); }
+}
+
+/* Small utility to help create colored-glow shadows used inline via tailwind classes */
+.glow-blue { box-shadow: 0 20px 60px rgba(59,130,246,0.12); }
+.glow-purple { box-shadow: 0 20px 60px rgba(139,92,246,0.12); }
+.glow-pink { box-shadow: 0 20px 60px rgba(236,72,153,0.10); }

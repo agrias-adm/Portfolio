@@ -26,7 +26,12 @@ app = FastAPI()
 # Allow frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # change to ["http://localhost:5173"] for security
+    allow_origins=[
+        "http://localhost:5173",  # Local development
+        "http://localhost:5174",  # Backup local port
+        "https://portfolio-production-592c.up.railway.app",  # Your Netlify URL
+        "https://*.netlify.app"  # All Netlify preview URLs
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

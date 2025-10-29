@@ -165,3 +165,5 @@ async def get_report(filename: str):
     except Exception as e:
         print(f"Error serving report: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+

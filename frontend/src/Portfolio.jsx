@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Github, Linkedin, Mail, Code, Sparkles, ArrowLeft, Menu, X } from 'lucide-react';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+
 // react-markdown is optional; if not installed the app will still work with plain text
 let ReactMarkdown;
 let remarkGfm;
@@ -23,7 +26,7 @@ export default function Portfolio() {
 
   // Load portfolio data
   useEffect(() => {
-    fetch('http://localhost:8000/api/portfolio')
+    fetch(`${API_URL}/api/portfolio`)
       .then(response => response.json())
       .then(data => setPortfolioData(data))
       .catch(error => console.error('Error loading portfolio data:', error));
@@ -57,7 +60,7 @@ export default function Portfolio() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch('${API_URL}/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: messageText })
@@ -256,12 +259,12 @@ export default function Portfolio() {
                       <div className="flex gap-4">
                         {exp.report && (
                           <a 
-                            href={`http://localhost:8000/api/reports/${exp.report.split('/').pop()}`}
+                            href={`${API_URL}/api/reports/${exp.report.split('/').pop()}`}
                             download
                             className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-all transform hover:scale-105 flex items-center gap-2 group"
                             onClick={(e) => {
                               e.preventDefault();
-                              window.open(`http://localhost:8000/api/reports/${exp.report.split('/').pop()}`, '_blank');
+                              window.open(`${API_URL}/api/reports/${exp.report.split('/').pop()}`, '_blank');
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transition-transform group-hover:translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

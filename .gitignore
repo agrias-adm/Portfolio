@@ -8,7 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
-backend/.env
+*/.env
 documents/
 
 frontend/node_modules/

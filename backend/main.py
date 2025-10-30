@@ -27,6 +27,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "*",
         "http://localhost:5173",  # Local development
         "http://localhost:5174",  # Backup local port
         "https://portfolio-production-592c.up.railway.app",  # Your Netlify URL

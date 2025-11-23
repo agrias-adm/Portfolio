@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Github, Linkedin, Mail, Code, Sparkles, ArrowLeft, Menu, X } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { Send, Github, Linkedin, Mail, Code, Sparkles, ArrowLeft, Menu, X, AlertCircle, Clock } from 'lucide-react';
 
+// Use environment variable or default to localhost
+const API_URL = typeof window !== 'undefined' && window.ENV?.VITE_API_URL 
+  ? window.ENV.VITE_API_URL 
+  : 'http://localhost:8000';
 
 // react-markdown is optional; if not installed the app will still work with plain text
 let ReactMarkdown;
@@ -15,12 +18,14 @@ try {
 }
 
 export default function Portfolio() {
-  const [currentView, setCurrentView] = useState('home'); // 'home' or 'chat'
+  const [currentView, setCurrentView] = useState('home');
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [portfolioData, setPortfolioData] = useState(null);
+  const [rateLimits, setRateLimits] = useState(null);
+  const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -31,6 +36,24 @@ export default function Portfolio() {
       .then(data => setPortfolioData(data))
       .catch(error => console.error('Error loading portfolio data:', error));
   }, []);
+
+  // Load rate limits when entering chat view
+  useEffect(() => {
+    if (currentView === 'chat') {
+      loadRateLimits();
+    }
+  }, [currentView]);
+
+  // Reload rate limits after each message
+  const loadRateLimits = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/chat/limits`);
+      const data = await response.json();
+      setRateLimits(data);
+    } catch (error) {
+      console.error('Error loading rate limits:', error);
+    }
+  };
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -48,11 +71,18 @@ export default function Portfolio() {
     scrollToBottom();
   }, [messages]);
 
-  // Send a message. If `text` is provided it will be sent immediately;
-  // otherwise the current inputValue is used.
   const handleSendMessage = async (text) => {
     const messageText = (typeof text === 'string' && text.trim()) ? text.trim() : inputValue.trim();
     if (!messageText || isLoading) return;
+
+    // Clear any previous errors
+    setError(null);
+
+    // Check input length
+    if (rateLimits && messageText.length > rateLimits.max_input_length) {
+      setError(`Message too long (${messageText.length} characters). Maximum ${rateLimits.max_input_length} characters allowed.`);
+      return;
+    }
 
     const userMessage = { role: 'user', content: messageText };
     setMessages(prev => [...prev, userMessage]);
@@ -67,14 +97,31 @@ export default function Portfolio() {
       });
 
       const data = await response.json();
-      const botMessage = { role: 'assistant', content: data.response };
-      setMessages(prev => [...prev, botMessage]);
+
+      if (response.status === 429) {
+        // Rate limit exceeded
+        setError(data.message || 'Rate limit exceeded. Please wait and try again.');
+        setMessages(prev => prev.slice(0, -1)); // Remove user message
+      } else if (data.response) {
+        const botMessage = { 
+          role: 'assistant', 
+          content: data.response,
+          tokensUsed: data.tokens_used
+        };
+        setMessages(prev => [...prev, botMessage]);
+        
+        // Update rate limits after successful message
+        await loadRateLimits();
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
       const errorMessage = {
         role: 'assistant',
         content: 'Sorry, I encountered an error. Please try again.'
       };
       setMessages(prev => [...prev, errorMessage]);
+      setError('Connection error. Please check your internet and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -89,6 +136,7 @@ export default function Portfolio() {
 
   const startNewChat = () => {
     setMessages([]);
+    setError(null);
   };
 
   const suggestedQuestions = [
@@ -131,8 +179,6 @@ export default function Portfolio() {
           {/* Hero Section */}
           <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
             <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
-              {/* Badge removed per request */}
-              
               <h1 className="text-6xl md:text-8xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-gradient">
                 Adam El Amrani
               </h1>
@@ -338,21 +384,16 @@ export default function Portfolio() {
             </div>
           </section>
         </div>
-
-        {/* Animations and gradients are provided via Tailwind + src/index.css */}
       </div>
     );
   }
 
-  // Chat View (Full Screen like ChatGPT)
+  // Chat View with Rate Limit Display
   return (
-    <div className="h-screen bg-slate-950 text-white flex overflow-hidden">
-      {/* Sidebar removed - chat view is full width */}
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="h-16 border-b border-slate-800 flex items-center justify-between px-6">
+    <div className="h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
+      {/* Header with Rate Limits */}
+      <div className="border-b border-slate-800">
+        <div className="h-16 flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setCurrentView('home')}
@@ -370,54 +411,107 @@ export default function Portfolio() {
               </div>
             </div>
           </div>
+          
+          {messages.length > 0 && (
+            <button
+              onClick={startNewChat}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors"
+            >
+              New Chat
+            </button>
+          )}
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto">
-          {messages.length === 0 ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="max-w-3xl mx-auto px-6 text-center space-y-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl mx-auto flex items-center justify-center">
-                  <Sparkles className="w-10 h-10" />
+        {/* Rate Limit Info Bar */}
+        {rateLimits && (
+          <div className="px-6 py-3 bg-slate-900/50 border-t border-slate-800">
+            <div className="flex items-center justify-between max-w-3xl mx-auto text-xs">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-blue-400" />
+                  <span className="text-slate-400">Minute:</span>
+                  <span className={`font-semibold ${rateLimits.minute_remaining <= 1 ? 'text-red-400' : 'text-blue-400'}`}>
+                    {rateLimits.minute_remaining}/{rateLimits.minute_limit}
+                  </span>
                 </div>
-                <div>
-                  <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                    Ask me anything about Adam
-                  </h1>
-                  <p className="text-slate-400 text-lg">
-                    I'm an AI assistant trained on Adam's experience, skills, and projects. Feel free to ask me anything!
-                  </p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4 mt-8">
-                  {suggestedQuestions.map((question, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => { setCurrentView('chat'); handleSendMessage(question); }}
-                      className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-blue-500 transition-all text-left group"
-                    >
-                      <p className="text-sm text-slate-300 group-hover:text-white transition-colors">
-                        {question}
-                      </p>
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-400">Daily:</span>
+                  <span className={`font-semibold ${rateLimits.daily_remaining <= 5 ? 'text-yellow-400' : 'text-green-400'}`}>
+                    {rateLimits.daily_remaining}/{rateLimits.daily_limit}
+                  </span>
                 </div>
               </div>
+              <div className="text-slate-500">
+                Max {rateLimits.max_input_length} chars • {rateLimits.max_tokens_per_request} tokens/response
+              </div>
             </div>
-          ) : (
-            <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}
-                >
-                  {msg.role === 'assistant' && (
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-5 h-5" />
-                    </div>
-                  )}
+          </div>
+        )}
+      </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-900/20 border-b border-red-800 px-6 py-3">
+          <div className="max-w-3xl mx-auto flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+            <p className="text-sm text-red-300">{error}</p>
+            <button 
+              onClick={() => setError(null)}
+              className="ml-auto text-red-400 hover:text-red-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto">
+        {messages.length === 0 ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="max-w-3xl mx-auto px-6 text-center space-y-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl mx-auto flex items-center justify-center">
+                <Sparkles className="w-10 h-10" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                  Ask me anything about Adam
+                </h1>
+                <p className="text-slate-400 text-lg">
+                  I'm an AI assistant trained on Adam's experience, skills, and projects. Feel free to ask me anything!
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mt-8">
+                {suggestedQuestions.map((question, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSendMessage(question)}
+                    className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-blue-500 transition-all text-left group"
+                  >
+                    <p className="text-sm text-slate-300 group-hover:text-white transition-colors">
+                      {question}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}
+              >
+                {msg.role === 'assistant' && (
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                )}
+                <div className="flex flex-col gap-2 max-w-[80%]">
                   <div
-                    className={`max-w-[80%] ${
+                    className={`${
                       msg.role === 'user'
                         ? 'bg-blue-600 text-white px-5 py-3 rounded-2xl'
                         : 'text-slate-100'
@@ -431,56 +525,75 @@ export default function Portfolio() {
                       <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                     )}
                   </div>
-                  {msg.role === 'user' && (
-                    <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-slate-400 to-slate-500" />
-                    </div>
+                  {msg.tokensUsed && (
+                    <span className="text-xs text-slate-500 px-1">
+                      {msg.tokensUsed} tokens used
+                    </span>
                   )}
                 </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-5 h-5" />
+                {msg.role === 'user' && (
+                  <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-slate-400 to-slate-500" />
                   </div>
-                  <div className="flex gap-1 items-center">
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
+                )}
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5" />
                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
+                <div className="flex gap-1 items-center">
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+      </div>
 
-        {/* Input Area */}
-        <div className="border-t border-slate-800 p-4">
-          <div className="max-w-3xl mx-auto">
-            <div className="relative">
-              <textarea
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask me anything about Adam..."
-                rows="1"
-                className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 pr-14 focus:outline-none focus:border-blue-500 text-white placeholder-slate-500 resize-none"
-                disabled={isLoading}
-                style={{ minHeight: '56px', maxHeight: '200px' }}
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={isLoading || !inputValue.trim()}
-                className="absolute right-3 bottom-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed p-2.5 rounded-xl transition-colors"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-            <p className="text-xs text-slate-500 text-center mt-3">
+      {/* Input Area with Character Counter */}
+      <div className="border-t border-slate-800 p-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="relative">
+            <textarea
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask me anything about Adam..."
+              rows="1"
+              className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 pr-14 focus:outline-none focus:border-blue-500 text-white placeholder-slate-500 resize-none"
+              disabled={isLoading}
+              style={{ minHeight: '56px', maxHeight: '200px' }}
+            />
+            <button
+              onClick={() => handleSendMessage()}
+              disabled={isLoading || !inputValue.trim()}
+              className="absolute right-3 bottom-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed p-2.5 rounded-xl transition-colors"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-slate-500">
               AI can make mistakes. Verify important information.
             </p>
+            {rateLimits && inputValue.length > 0 && (
+              <span className={`text-xs ${
+                inputValue.length > rateLimits.max_input_length 
+                  ? 'text-red-400 font-semibold' 
+                  : inputValue.length > rateLimits.max_input_length * 0.8
+                    ? 'text-yellow-400'
+                    : 'text-slate-500'
+              }`}>
+                {inputValue.length}/{rateLimits.max_input_length} characters
+              </span>
+            )}
           </div>
         </div>
       </div>

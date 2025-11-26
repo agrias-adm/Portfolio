@@ -31,7 +31,7 @@ export default function Portfolio() {
 
   // Load portfolio data
   useEffect(() => {
-    fetch(`${API_URL}/api/portfolio`)
+    fetch(`${API_URL}/api/data`)
       .then(response => response.json())
       .then(data => setPortfolioData(data))
       .catch(error => console.error('Error loading portfolio data:', error));

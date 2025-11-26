@@ -185,10 +185,16 @@ except Exception as e:
     PORTFOLIO = {}
 
 
-@app.get("/api/portfolio")
-async def get_portfolio():
+@app.get("/api/data")
+async def get_data():
     """Return the portfolio information from info.json"""
     return PORTFOLIO
+
+
+# @app.get("/api/portfolio")
+# async def get_portfolio():
+#     """Return the portfolio information from info.json"""
+#     return PORTFOLIO
 
 
 @app.get("/api/chat/limits")
@@ -365,3 +371,9 @@ async def get_report(filename: str):
     except Exception as e:
         print(f"Error serving report: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+    
+
+@app.get("/")
+async def root():
+    """Health check endpoint"""
+    return {"status": "ok", "message": "Adam's Portfolio API"}

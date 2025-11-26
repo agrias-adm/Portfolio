@@ -72,6 +72,12 @@ npm install
 npm run dev
 ```
 
+### Production / Deployment
+
+- Make sure to set the build-time environment variable `VITE_API_URL` in your hosting platform (Netlify, Vercel, Railway, etc.) to the URL of your backend API (e.g., `https://your-backend.example.com`). The frontend uses this variable at build-time to determine where to send API requests.
+- If you need to change the API URL without rebuilding, inject a runtime script that sets `window.ENV = { VITE_API_URL: 'https://your-backend.example.com' }` in the page before `main.jsx` is executed. This repository exposes this fallback using `window.ENV` in `main.jsx`.
+- If requests to `/api/*` are blocked in the browser (for example, by an ad-block extension), test with extensions disabled or in an incognito window to confirm; ad-blockers sometimes block URLs that look like chat endpoints.
+
 ### Backend
 
 ```bash

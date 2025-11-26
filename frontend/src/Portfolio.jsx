@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Github, Linkedin, Mail, Code, Sparkles, ArrowLeft, Menu, X, AlertCircle, Clock } from 'lucide-react';
 
-// Use environment variable or default to localhost
-const API_URL = typeof window !== 'undefined' && window.ENV?.VITE_API_URL 
-  ? window.ENV.VITE_API_URL 
-  : 'http://localhost:8000';
+// Determine API URL using runtime override, build-time env, or fallback to page origin.
+const buildTimeApi = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env.VITE_API_URL : undefined;
+const API_URL = (typeof window !== 'undefined')
+  ? (window.ENV?.VITE_API_URL || buildTimeApi || window.location.origin)
+  : (buildTimeApi || 'http://localhost:8000');
 
 // react-markdown is optional; if not installed the app will still work with plain text
 let ReactMarkdown;
